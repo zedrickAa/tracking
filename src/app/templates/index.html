@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Vue-js | Django | Crud App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A simple crud app made with the vue js and django">
+
+    <meta name="keywords" content="vuejs, django, crudapp, restapi">
+    <!-- bootstap -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <!-- boostrap css -->
+
+  </head>
+  <body>
+        <div id="starting">
+                <div class="container">
+                  <div class="row">
+                    <h1>List of Locations
+                    <button  type="button" class="btn btn-primary" data-toggle="modal" data-target="#addLocationModal">Add Location</button>
+                    </h1>
+                    
+                    <table class="table">
+                      <thead>
+                        <tr>
+                          <th scope="col">#</th>
+                          <th scope="col">Name</th>
+                          <th scope="col">Address</th>
+                          <th scope="col">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="location in locations">
+                          <th scope="row">${location.id}</th>
+                          <td>${location.name}</td>
+                          <td>${location.address}</td>
+                          <td>
+                                <button class="btn btn-info" v-on:click="getLocation(location.id)">Edit</button>
+                                <button class="btn btn-danger" v-on:click="deleteLocation(location.id)">Delete</button>
+                          </td>
+                      </tbody>
+                    </table>
+                 </div>
+            </div>
+             <!-- Add Location Modal -->
+          <div class="modal fade" id="addLocationModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="exampleModalLongTitle">Add Location</h5>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                    <form v-on:submit.prevent="addLocation()">
+                    <div class="modal-body">
+                        <div class="form-group">
+                          <label for="name">Location Name</label>
+                          <input
+                            type="text"
+                            class="form-control"
+                            id="name"
+                            placeholder="Enter Location Name"
+                            v-model="newLocation.name"
+                            required="required" >
+                        </div>
+                        <div class="form-group">
+                          <label for="address">Location Address</label>
+                          <textarea
+                            class="form-control"
+                            id="address"
+                            placeholder="Enter Location Address"
+                            v-model="newLocation.address"
+                            required="required"
+                            rows="3"></textarea>
+                        </div>
+                       
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary m-progress" data-dismiss="modal">Close</button>
+                      <button type="submit" class="btn btn-primary">Save changes</button>
+                    </div>
+                    </form>
+    
+                    
+    
+    
+    
+    
+    
+    
+                  </div>
+                </div>
+                <div class="loading" v-if="loading===true">Loading&#8230;</div>
+              </div>
+              <!-- End of add Location modal -->
+               <!-- Edit Location Modal -->
+          <div class="modal fade" id="editLocationModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="exampleModalLongTitle">EDIT Location</h5>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                    <form v-on:submit.prevent="updateLocation()">
+                    <div class="modal-body">
+                        <div class="form-group">
+                          <label for="name">Location Name</label>
+                          <input
+                            type="text"
+                            class="form-control"
+                            id="name"
+                            placeholder="Enter Location Name"
+                            v-model="currentLocation.name"
+                            required="required" >
+                        </div>
+                        <div class="form-group">
+                          <label for="address">Location Address</label>
+                          <textarea
+                            class="form-control"
+                            id="address"
+                            placeholder="Enter Location Address"
+                            v-model="currentLocation.address"
+                            required="required"
+                            rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary m-progress" data-dismiss="modal">Close</button>
+                      <button type="submit" class="btn btn-primary">Save changes</button>
+                    </div>
+                    </form>
+                  </div>
+                </div>
+                <div class="loading" v-if="loading===true">Loading&#8230;</div>
+              </div>
+              <!-- End of edit location modal -->
+        </div>
+                    
+        <!-- bootrtap js files -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+    <!-- vue.js files -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.13/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue-resource@1.3.5"></script>
+    <script type="text/javascript">
+        Vue.http.headers.common['X-CSRFToken'] = "{{ csrf_token }}";
+        new Vue({
+        el: '#starting',
+        delimiters: ['${','}'],
+        data: {
+            locations: [],
+            loading: true,
+            currentLocation: {},
+            message: null,
+            newLocation: { 'name': null, 'address': null, },
+            search_term: '',
+        },
+        mounted: function() {
+            this.getLocations();
+        },
+        methods: {
+            getLocations: function() {
+            let api_url = '/api/app/';
+            if(this.search_term!==''||this.search_term!==null) {
+                api_url = '/api/app/?search=${this.search_term}'
+            }
+            this.loading = true;
+            this.$http.get(api_url)
+                .then((response) => {
+                    this.locations = response.data;
+                    this.loading = false;
+                })
+                .catch((err) => {
+                    this.loading = false;
+                    console.log(err);
+                })
+            },
+            getLocation: function(id) {
+            this.loading = true;
+            this.$http.get(`/api/app/${id}/`)
+                .then((response) => {
+                    this.currentLocation = response.data;
+                    $("#editLocationModal").modal('show');
+                    this.loading = false;
+                })
+                .catch((err) => {
+                    this.loading = false;
+                    console.log(err);
+                })
+            },
+            addLocation: function() {
+            this.loading = true;
+            this.$http.post('/api/app/',this.newLocation)
+                .then((response) => {
+                    this.loading = true;
+                    this.getLocations();
+                })
+                .catch((err) => {
+                    this.loading = true;
+                    console.log(err);
+                })
+            },
+            updateLocation: function() {
+            this.loading = true;
+            this.$http.put(`/api/app/${this.currentLocation.id}/`, this.currentLocation)
+                .then((response) => {
+                    this.loading = false;
+                    this.currentLocation = response.data;
+                    this.getLocations();
+                })
+                .catch((err) => {
+                    this.loading = false;
+                    console.log(err);
+                })
+            },
+            deleteLocation: function(id) {
+            this.loading = true;
+            this.$http.delete(`/api/app/${id}/`)
+                .then((response) => {
+                    this.loading = false;
+                    this.getLocations();
+                })
+                .catch((err) => {
+                    this.loading = false;
+                    console.log(err);
+                })
+            }
+        }
+    });
+  </script>
+  </body>
+
+</html>

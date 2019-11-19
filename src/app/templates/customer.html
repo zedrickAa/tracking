@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Vue-js | Django | Crud App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A simple crud app made with the vue js and django">
+
+    <meta name="keywords" content="vuejs, django, crudapp, restapi">
+    <!-- bootstap -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <!-- boostrap css -->
+
+  </head>
+  <body>
+        <div id="starting">
+                <div class="container">
+                  <div class="row">
+                    <h1>List of Customers
+                    <button  type="button" class="btn btn-primary" data-toggle="modal" data-target="#addCustomerModal">Add Customer</button>
+                    </h1>
+                    
+                    <table class="table">
+                      <thead>
+                        <tr>
+                          <th scope="col">#</th>
+                          <th scope="col">User</th>
+                          <th scope="col">Phone</th>
+                          <th scope="col">Address</th>              
+                          <th scope="col">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="customer in customers">
+                          <th scope="row">${customer.id}</th>
+                          <td>${customer.user}</td>
+                          <td>${customer.phone}</td>
+                          <td>${customer.address}</td>
+                          
+                          <td>
+                                <button class="btn btn-info" v-on:click="getCustomer(customer.id)">Edit</button>
+                                <button class="btn btn-danger" v-on:click="deleteCustomer(customer.id)">Delete</button>
+                          </td>
+                      </tbody>
+                    </table>
+                 </div>
+                 <!-- Add Employee Modal -->
+                <div class="modal fade" id="addCustomerModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="exampleModalLongTitle">Add Customer/h5>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                    <form v-on:submit.prevent="addCustomer()">
+                    <div class="modal-body">
+                        <div class="form-group">
+                          <label for="user">Customer User</label>
+                          <input
+                            type="text"
+                            class="form-control"
+                            id="user"
+                            placeholder="Enter Customer User"
+                            v-model="newCustomer.user"
+                            required="required" >
+                        </div>
+                      
+                        <div class="form-group">
+                                <label for="phone">Customer Phone</label>
+                                <input
+                                  type="text"
+                                  class="form-control"
+                                  id="phone"
+                                  placeholder="Enter CustomerPhone"
+                                  v-model="newCustomer.phone"
+                                  required="required" >
+                        </div>
+                        <div class="form-group">
+                                <label for="address">Customer Address</label>
+                                <textarea
+                                  class="form-control"
+                                  id="address"
+                                  placeholder="Enter Customer Address"
+                                  v-model="newCustomer.address"
+                                  required="required"
+                                  rows="3"></textarea>
+                        </div>
+                      
+                       
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary m-progress" data-dismiss="modal">Close</button>
+                      <button type="submit" class="btn btn-primary">Save changes</button>
+                    </div>
+                    </form>
+    
+                  </div>
+                </div>
+                <div class="loading" v-if="loading===true">Loading&#8230;</div>
+              </div>
+              <!-- End of add Employee modal -->
+            </div>
+        </div>
+     <!-- bootrtap js files -->
+     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+ 
+     <!-- vue.js files -->
+     <script src="https://cdn.jsdelivr.net/npm/vue@2.5.13/dist/vue.js"></script>
+     <script src="https://cdn.jsdelivr.net/npm/vue-resource@1.3.5"></script>
+     <script type="text/javascript">
+         Vue.http.headers.common['X-CSRFToken'] = "{{ csrf_token }}";
+         new Vue({
+         el: '#starting',
+         delimiters: ['${','}'],
+         data: {
+             customers: [],
+             loading: true,
+             currentCustomer: {},
+             message: null,
+             newCustomer: { 'user': null, 'phone': null, 'address': null},
+             search_term: '',
+         },
+        
+         mounted: function() {
+             this.getCustomers();
+         },
+         methods: {
+            getCustomers: function() {
+           let api_url = '/api/customer/';
+           if(this.search_term!==''||this.search_term!==null) {
+             api_url = `/api/customer/?search=${this.search_term}`
+           }
+           this.loading = true;
+           this.$http.get(api_url)
+               .then((response) => {
+                 this.customers = response.data;
+                 this.loading = false;
+               })
+               .catch((err) => {
+                 this.loading = false;
+                 console.log(err);
+               })
+         },
+         getCustomer: function(id) {
+             this.loading = true;
+             this.$http.get(`/api/customer/${id}/`)
+                 .then((response) => {
+                     this.currentCustomer = response.data;
+                     $("#editCustomerModal").modal('show');
+                     this.loading = false;
+                 })
+                 .catch((err) => {
+                     this.loading = false;
+                     console.log(err);
+                 })
+         },
+         addCustomer: function() {
+             this.loading = true;
+             this.$http.post('/api/customer/',this.newCustomer)
+                 .then((response) => {
+                     this.loading = true;
+                     this.getCustomers();
+                 })
+                 .catch((err) => {
+                     this.loading = true;
+                     console.log(err);
+                 })
+         },
+         updateCustomer: function() {
+             this.loading = true;
+             this.$http.put(`/api/customer/${this.currentCustomer.id}/`, this.currentCustomer)
+                 .then((response) => {
+                     this.loading = false;
+                     this.currentCustomer = response.data;
+                     this.getCustomers();
+                 })
+                 .catch((err) => {
+                     this.loading = false;
+                     console.log(err);
+                 })
+             },
+         deleteCustomer: function(id) {
+             this.loading = true;
+             this.$http.delete(`/api/customer/${id}/`)
+                 .then((response) => {
+                     this.loading = false;
+                     this.getCustomers();
+                 })
+                 .catch((err) => {
+                     this.loading = false;
+                     console.log(err);
+                 })
+         }
+     }
+     
+     });
+   </script>
+  </body>
+</html>
